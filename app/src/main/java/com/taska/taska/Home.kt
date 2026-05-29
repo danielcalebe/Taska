@@ -85,7 +85,7 @@ fun Home(verKanban: () -> Unit, cadastrar: () -> Unit, gerarRelatorio: () -> Uni
               Text("HOME", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
             }
           }
-          Image(painterResource(R.drawable.logo_crop), null, modifier = Modifier.size(48.dp))
+          Image(painterResource(R.drawable.logo_crop), null, modifier = Modifier.size(48.dp).alpha(0f))
         }
 
         Row(

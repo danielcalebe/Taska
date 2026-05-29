@@ -1,6 +1,5 @@
 package com.taska.taska
 
-import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -18,10 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.taska.taska.ui.theme.TaskaTheme
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.UUID
-import kotlin.uuid.Uuid
 import androidx.core.content.edit
 
 @Serializable
@@ -61,8 +57,15 @@ class MainActivity : ComponentActivity() {
               sp.edit { putString("tasks", Json.encodeToString(list)) }
             }
 
+            fun editTask(newTask: Task) {
+              val list = getTasks().toMutableList()
+              list.removeIf { it.uuid == newTask.uuid }
+              list.add(newTask)
+              sp.edit { putString("tasks", Json.encodeToString(list)) }
+            }
 
-            NavHost(navController, "cadastrar") {
+
+            NavHost(navController, "kanban") {
               composable("home") {
                 Home(
                   cadastrar = { navController.navigate("cadastrar") },
@@ -86,6 +89,45 @@ class MainActivity : ComponentActivity() {
                     ).show()
                     navController.navigate("kanban")
                   }
+                )
+              }
+              composable("kanban") {
+                Kanban(
+                  onBackToHome = { navController.navigate("home") },
+                  onPrevious = { task ->
+                    when (task.status) {
+                      "todo" -> Toast.makeText(
+                        ctx, "Não é possível mover uma atividade para antes de TODO",
+                        Toast.LENGTH_SHORT
+                      ).show()
+
+                      "doing" -> editTask(task.copy(status = "todo"))
+                      "done" -> editTask(task.copy(status = "doing"))
+
+                    }
+
+
+                  },
+                  onNext = { task ->
+                    when (task.status) {
+                      "todo" -> editTask(task.copy(status = "doing"))
+                      "doing" -> editTask(task.copy(status = "done"))
+                      "done" -> Toast.makeText(
+                        ctx, "Não é possível mover uma atividade para depois de DONE",
+                        Toast.LENGTH_SHORT
+                      ).show()
+
+
+                    }
+
+
+                  },
+                  getTasks = {
+                    getTasks()
+
+                  },
+
+                  cadastrarAtividade = { navController.navigate("cadastrar") }
                 )
               }
 
